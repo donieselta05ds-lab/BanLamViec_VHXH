@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cài nút Quét qlvb</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+  .bm { display: inline-block; padding: 10px 18px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-weight: 600; text-decoration: none; cursor: grab; }
+  ol li { margin-bottom: 8px; }
+  code { font-family: var(--font-mono); background: var(--surface-2); padding: 1px 6px; border-radius: 4px; word-break: break-all; }
+  #web { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cài nút "Quét qlvb"</h1>
+  <p>Không cần cài phần mềm, không lưu mật khẩu. Máy nào cũng cài được trong 30 giây.</p>
+
+  <div class="block">
+    <h2>Bước 1. Kéo nút này lên thanh dấu trang của Chrome (hoặc Edge)</h2>
+    <p><a class="bm" id="bm" href="#">Quét qlvb</a></p>
+    <p class="hint">Chưa thấy thanh dấu trang: bấm <code>Ctrl + Shift + B</code>. Kéo nút xanh thả lên thanh đó. Không bấm vào nút ở trang này.</p>
+    <p class="hint" id="webInfo"></p>
+    <details>
+      <summary class="hint">Đổi địa chỉ Bàn làm việc</summary>
+      <p><input id="web" type="url" placeholder="https://…/index.html"></p>
+      <p class="hint">Nút mở Bàn làm việc theo địa chỉ này để chuyển dữ liệu sang. Để trống thì nút tải về tệp .json (nhập bằng nút "Nhập dữ liệu qlvb").</p>
+    </details>
+  </div>
+
+  <div class="block">
+    <h2>Bước 2. Mỗi lần quét (khoảng 20 giây)</h2>
+    <ol>
+      <li>Đăng nhập qlvb như thường lệ, đang ở trang nào cũng được.</li>
+      <li>Bấm nút <b>Quét qlvb</b> trên thanh dấu trang. Lần đầu, nếu Chrome hỏi, chọn <b>luôn cho phép cửa sổ bật lên</b> từ qlvb.</li>
+      <li>Nút tự mở <b>Văn bản đến chờ xử lý</b> rồi <b>Văn bản đi đã phát hành</b>, đọc hai danh sách. Đừng bấm gì trên qlvb trong lúc đó.</li>
+      <li>Bàn làm việc mở ra và tự cập nhật văn bản mới.</li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>Nút này làm gì</h2>
+    <p>Nút chỉ <b>đọc</b> hai danh sách trên màn hình của bạn: không bấm xử lý, không sửa gì trên qlvb, không lưu mật khẩu. <b>Văn bản mật được bỏ qua.</b> Dữ liệu chuyển sang Bàn làm việc qua phần sau dấu <code>#</code> của địa chỉ, phần này chỉ nằm trong trình duyệt, không gửi lên máy chủ nào; Bàn làm việc lưu dữ liệu trên trình duyệt của máy bạn. Mã nguồn: <code>js/nut-quet.js</code>.</p>
+    <p class="hint">Nên báo bộ phận CNTT hoặc lãnh đạo phòng trước khi dùng trên máy cơ quan.</p>
+  </div>
+</div>
+<script src="js/nut-quet.js"></script>
+<script>
+  (function () {
+    var macDinh = location.protocol === "https:" || location.protocol === "http:" ? location.href.replace(/[#?].*$/, "").replace(/[^/]*$/, "index.html") : "";
+    var o = document.getElementById("web"), bm = document.getElementById("bm"), info = document.getElementById("webInfo");
+    o.value = macDinh;
+    function dung() {
+      var web = o.value.trim();
+      bm.href = "javascript:" + encodeURIComponent("(" + window.NUT_QUET.toString() + ")(" + JSON.stringify(web) + ")");
+      info.innerHTML = web ? "Nút sẽ chuyển dữ liệu sang Bàn làm việc tại <code>" + web.replace(/</g, "&lt;") + "</code>."
+        : "Trang này đang mở từ tệp trên máy nên nút sẽ <b>tải về tệp .json</b>. Mở trang cài đặt từ địa chỉ web của Bàn làm việc để nút tự chuyển dữ liệu sang.";
+    }
+    o.addEventListener("input", dung);
+    dung();
+  })();
+</script>
+</body>
+</html>

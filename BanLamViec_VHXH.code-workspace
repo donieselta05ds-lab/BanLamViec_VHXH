@@ -1,0 +1,11 @@
+{
+  "folders": [{ "path": "." }],
+  "settings": {
+    "files.encoding": "utf8",
+    "editor.tabSize": 2,
+    "liveServer.settings.root": "/"
+  },
+  "extensions": {
+    "recommendations": ["ritwickdey.LiveServer", "ms-python.python"]
+  }
+}

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bàn làm việc Phòng VHXH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="seal" aria-hidden="true">GĐ</div>
+      <div>
+        <p class="eyebrow">UBND phường Gia Định · Phòng VHXH</p>
+        <h1>Bàn làm việc Phòng VHXH</h1>
+      </div>
+    </div>
+    <div class="scan">
+      <p class="scan-info" id="scanInfo"></p>
+      <div class="row">
+        <button class="btn btn-primary" type="button" data-open-lich>+ Thêm lịch</button>
+        <button class="btn" type="button" id="btnBackup">Sao lưu</button>
+        <button class="btn" type="button" id="btnScan">Nhập dữ liệu qlvb</button>
+      </div>
+    </div>
+  </header>
+
+  <p class="demo-note" id="dataNote">Đang dùng dữ liệu mẫu. Để dùng dữ liệu thật, tạo tệp data/local.js (xem README).</p>
+
+  <nav class="tabs" role="tablist" aria-label="Các mục">
+    <button class="tab is-active" role="tab" id="tab-homnay" data-tab="homnay" aria-selected="true">Hôm nay</button>
+    <button class="tab" role="tab" id="tab-lich" data-tab="lich" aria-selected="false">Lịch</button>
+    <button class="tab" role="tab" id="tab-den" data-tab="den" aria-selected="false">Văn bản đến <span class="count" id="cntDen" title="Chưa phân loại"></span></button>
+    <button class="tab" role="tab" id="tab-cho" data-tab="cho" aria-selected="false">Chờ xem xét <span class="count amber" id="cntCho"></span></button>
+    <button class="tab" role="tab" id="tab-baocao" data-tab="baocao" aria-selected="false">Báo cáo</button>
+    <button class="tab" role="tab" id="tab-di" data-tab="di" aria-selected="false">Văn bản đi</button>
+  </nav>
+
+  <!-- HÔM NAY -->
+  <section class="panel" id="panel-homnay" role="tabpanel" aria-labelledby="tab-homnay">
+    <div class="summary" id="summary"></div>
+    <div class="grid-2">
+      <div class="block">
+        <div class="block-head"><h2 id="todayTitle">Việc hôm nay</h2><button class="btn btn-sm" type="button" data-open-lich="today">+ Thêm</button></div>
+        <ul class="tasks" id="todayList"></ul>
+        <h3 class="sub">7 ngày tới</h3>
+        <ul class="tasks compact" id="weekList"></ul>
+      </div>
+      <div class="side">
+        <div class="block">
+          <div class="block-head"><h2>Văn bản mới · cần làm gì</h2><button class="btn btn-sm btn-ghost" type="button" id="goUnsorted">Xem hết</button></div>
+          <p class="hint">Gợi ý theo trích yếu và độ khẩn; bấm "Xử lý" để xác nhận hoặc chọn lại.</p>
+          <ul class="mini" id="unsortedList"></ul>
+        </div>
+        <div class="block">
+          <div class="block-head"><h2>Chờ công chức xem <span class="hint" id="choBlockCount"></span></h2><button class="btn btn-sm btn-ghost" type="button" id="goCho">Mở mục</button></div>
+          <ul class="mini" id="choMini"></ul>
+        </div>
+        <div class="block">
+          <div class="block-head"><h2>Báo cáo sắp đến hạn</h2><button class="btn btn-sm btn-ghost" type="button" id="goBaoCao">Mở danh mục</button></div>
+          <ul class="mini" id="bcSoon"></ul>
+        </div>
+        <div class="block">
+          <h2>Thư mục cần kiểm tra</h2>
+          <ul class="mini" id="folderList"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LỊCH -->
+  <section class="panel" id="panel-lich" role="tabpanel" aria-labelledby="tab-lich" hidden>
+    <div class="cal-layout">
+      <div class="block">
+        <div class="cal-head">
+          <button class="btn btn-sm" type="button" id="prevMonth" aria-label="Tháng trước">‹</button>
+          <h2 id="monthTitle"></h2>
+          <button class="btn btn-sm" type="button" id="nextMonth" aria-label="Tháng sau">›</button>
+          <button class="btn btn-sm btn-ghost" type="button" id="goToday">Hôm nay</button>
+        </div>
+        <div class="cal-grid" id="calGrid" role="grid"></div>
+        <div class="legend">
+          <span><i class="sw red"></i>Gấp, khẩn</span>
+          <span><i class="sw amber"></i>Việc cần làm</span>
+          <span><i class="sw blue"></i>Báo cáo định kỳ</span>
+          <span><i class="sw violet"></i>Tập huấn, họp, sự kiện</span>
+          <span><i class="sw green"></i>Văn bản đi</span>
+          <span><i class="sw grey"></i>Văn bản đến</span>
+        </div>
+      </div>
+      <aside class="block day-panel" aria-live="polite">
+        <div class="block-head"><h2 id="dayTitle"></h2><button class="btn btn-sm" type="button" data-open-lich="selected">+ Thêm</button></div>
+        <div id="dayDetail"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- VĂN BẢN ĐẾN -->
+  <section class="panel" id="panel-den" role="tabpanel" aria-labelledby="tab-den" hidden>
+    <div class="block">
+      <div class="block-head">
+        <h2>Văn bản đến chờ xử lý</h2>
+        <div class="filters" role="group" aria-label="Lọc">
+          <button class="chip is-on" type="button" data-fden="homnay">Hôm nay</button>
+          <button class="chip" type="button" data-fden="all">Tất cả</button>
+          <button class="chip" type="button" data-fden="chua">Chưa phân loại</button>
+          <button class="chip" type="button" data-fden="cho">Chờ xem xét</button>
+          <button class="chip" type="button" data-fden="red">Khẩn, chưa trả lời</button>
+          <button class="chip" type="button" data-fden="xong">Đã phân loại</button>
+        </div>
+      </div>
+      <input type="search" id="qDen" class="search" placeholder="Tìm số ký hiệu, trích yếu…">
+      <div class="table-wrap"><table class="table"><thead><tr><th>Số, ký hiệu</th><th>Đến</th><th>Độ khẩn</th><th>Trích yếu</th><th>Cần làm</th><th></th></tr></thead><tbody id="tblDen"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- CHỜ XEM XÉT -->
+  <section class="panel" id="panel-cho" role="tabpanel" aria-labelledby="tab-cho" hidden>
+    <div class="block">
+      <div class="block-head"><h2>Văn bản chờ xem xét</h2></div>
+      <p class="hint">Văn bản chưa biết cần làm gì được chuyển vào đây (nút "Chưa rõ" ở tab Văn bản đến). Công chức phụ trách mở từng văn bản, bấm "Chọn hướng xử lý"; văn bản sẽ rời mục này và lên lịch.</p>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Số, ký hiệu</th><th>Đến</th><th>Độ khẩn</th><th>Trích yếu</th><th>Vướng ở đâu</th><th></th></tr></thead><tbody id="tblCho"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- BÁO CÁO -->
+  <section class="panel" id="panel-baocao" role="tabpanel" aria-labelledby="tab-baocao" hidden>
+    <div class="block">
+      <div class="block-head">
+        <h2>Danh mục báo cáo <span class="hint" id="bcCount"></span></h2>
+        <button class="btn btn-primary btn-sm" type="button" id="btnAddBC">+ Thêm báo cáo</button>
+      </div>
+      <p class="hint">Bấm vào một báo cáo để xem cần soạn những mục gì và văn bản đi trong kỳ để lấy số liệu.</p>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Báo cáo</th><th>Chu kỳ</th><th>Nơi nhận</th><th>Căn cứ</th><th>Kỳ tới</th><th>Trạng thái lịch</th></tr></thead><tbody id="tblBC"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- VĂN BẢN ĐI -->
+  <section class="panel" id="panel-di" role="tabpanel" aria-labelledby="tab-di" hidden>
+    <div class="block">
+      <div class="block-head">
+        <h2>Văn bản đi đã phát hành</h2>
+        <div class="filters" role="group" aria-label="Lọc">
+          <button class="chip is-on" type="button" data-fdi="homnay">Hôm nay</button>
+          <button class="chip" type="button" data-fdi="all">Tất cả</button>
+          <button class="chip" type="button" data-fdi="green">Hoàn thành</button>
+          <button class="chip" type="button" data-fdi="amber">Tờ trình đang chờ</button>
+          <button class="chip" type="button" data-fdi="grey">Tờ trình đã có văn bản chính</button>
+        </div>
+      </div>
+      <input type="search" id="qDi" class="search" placeholder="Tìm số ký hiệu, trích yếu…">
+      <div class="table-wrap"><table class="table"><thead><tr><th>Số, ký hiệu</th><th>Ngày</th><th>Loại</th><th>Trích yếu</th><th>Trạng thái</th></tr></thead><tbody id="tblDi"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ===== HỘP THOẠI ===== -->
+
+  <!-- Xử lý văn bản đến -->
+  <div class="overlay" id="dlgXuLy" hidden>
+    <form class="dialog wide" id="formXuLy" role="dialog" aria-modal="true" aria-labelledby="xlTitle">
+      <h2 id="xlTitle">Xử lý văn bản đến</h2>
+      <div class="doc-card" id="xlDoc"></div>
+      <p class="suggest" id="xlSuggest"></p>
+      <fieldset>
+        <legend class="label">Cần làm gì</legend>
+        <div class="radios" id="xlHuong"></div>
+      </fieldset>
+      <div class="out-card" id="xlOut"></div>
+      <div class="two">
+        <label class="field" for="xlHan"><span id="xlHanLbl">Hạn hoàn thành</span><input id="xlHan" type="date" required></label>
+        <label class="field" for="xlNguoi"><span>Phối hợp, gửi đến</span><input id="xlNguoi" type="text" placeholder="Ví dụ: Công an phường, các khu phố"></label>
+      </div>
+      <p class="hint">Hạn tự tính theo độ khẩn và loại việc. Kiểm tra lại hạn ghi trong nội dung văn bản.</p>
+      <div class="ev-fields" id="xlEvent" hidden>
+        <p class="label">Ngày tham dự (đưa lên lịch)</p>
+        <div class="three">
+          <label class="field" for="xlEvDate"><span>Ngày</span><input id="xlEvDate" type="date"></label>
+          <label class="field" for="xlEvTime"><span>Giờ</span><input id="xlEvTime" type="time"></label>
+          <label class="field" for="xlEvPlace"><span>Địa điểm</span><input id="xlEvPlace" type="text"></label>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="xlDinhKy"> Văn bản này yêu cầu báo cáo định kỳ: thêm vào danh mục báo cáo</label>
+      <label class="field" for="xlNote"><span id="xlNoteLbl">Ghi chú</span><input id="xlNote" type="text" placeholder="Nội dung chính cần lưu ý"></label>
+      <div class="row end">
+        <button class="btn btn-ghost" type="button" id="xlClear" hidden>Bỏ phân loại</button>
+        <button class="btn" type="button" data-close>Hủy</button>
+        <button class="btn btn-primary" type="submit">Lưu, đưa lên lịch</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Thêm báo cáo -->
+  <div class="overlay" id="dlgBC" hidden>
+    <form class="dialog wide" id="formBC" role="dialog" aria-modal="true" aria-labelledby="bcTitle">
+      <h2 id="bcTitle">Thêm báo cáo</h2>
+      <p class="hint">Lấy thông tin từ văn bản chỉ đạo (văn bản của Sở, VPĐU, UBND Thành phố yêu cầu báo cáo).</p>
+      <label class="field" for="bcTen"><span>1. Tên báo cáo</span><input id="bcTen" type="text" required placeholder="Ví dụ: Báo cáo tháng công tác văn hóa"></label>
+      <div class="two">
+        <label class="field" for="bcMang"><span>2. Mảng</span><select id="bcMang"></select></label>
+        <label class="field" for="bcNoiNhan"><span>3. Gửi cho ai</span><input id="bcNoiNhan" type="text" placeholder="Ví dụ: Sở Văn hóa và Thể thao"></label>
+      </div>
+      <label class="field" for="bcCanCu"><span>4. Căn cứ (số văn bản yêu cầu báo cáo)</span><input id="bcCanCu" type="text" list="dsDen" placeholder="Gõ hoặc chọn từ văn bản đến"></label>
+      <div class="two">
+        <label class="field" for="bcLoai"><span>5. Chu kỳ</span>
+          <select id="bcLoai">
+            <option value="tuan">Hằng tuần</option><option value="thang">Hằng tháng</option><option value="quy">Hằng quý</option>
+            <option value="6thang">6 tháng</option><option value="9thang">9 tháng</option><option value="nam">Hằng năm</option>
+            <option value="dot-xuat">Một lần (đột xuất)</option>
+          </select>
+        </label>
+        <div class="field" id="bcHanWrap"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="bcXacNhan"> Hạn ghi đúng theo văn bản chỉ đạo (bỏ chọn nếu đang ước tính)</label>
+      <label class="field" for="bcDeCuong"><span>6. Báo cáo cần có những mục gì (mỗi dòng một mục)</span>
+        <textarea id="bcDeCuong" rows="4" placeholder="Kết quả thực hiện trong kỳ&#10;Số liệu theo phụ lục của Sở&#10;Nhiệm vụ kỳ tới&#10;Khó khăn, đề xuất"></textarea></label>
+      <label class="field" for="bcNguon"><span>7. Lấy số liệu ở đâu</span><input id="bcNguon" type="text" placeholder="Ví dụ: văn bản đi trong kỳ trên qlvb; số liệu khu phố"></label>
+      <label class="field" for="bcMau"><span>8. Mẫu báo cáo (nếu có)</span><input id="bcMau" type="text" placeholder="Ví dụ: templates/bc-thang-van-hoa/ hoặc phụ lục kèm văn bản của Sở"></label>
+      <div class="row end">
+        <button class="btn" type="button" data-close>Hủy</button>
+        <button class="btn btn-primary" type="submit">Thêm báo cáo</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Xem báo cáo -->
+  <div class="overlay" id="dlgBCView" hidden>
+    <div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="bvTitle">
+      <h2 id="bvTitle"></h2>
+      <div id="bvBody"></div>
+      <div class="row end">
+        <button class="btn btn-ghost" type="button" id="bvDelete" hidden>Xóa báo cáo</button>
+        <button class="btn" type="button" id="bvTask">Tạo việc soạn kỳ này</button>
+        <button class="btn btn-primary" type="button" data-close>Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thêm lịch -->
+  <div class="overlay" id="dlgLich" hidden>
+    <form class="dialog" id="formLich" role="dialog" aria-modal="true" aria-labelledby="lcTitle">
+      <h2 id="lcTitle">Thêm vào lịch</h2>
+      <label class="field" for="lcLoai"><span>Loại</span><select id="lcLoai"></select></label>
+      <label class="field" for="lcTen"><span>Nội dung</span><input id="lcTen" type="text" required placeholder="Ví dụ: Tập huấn kỹ năng số cho Tổ CNS cộng đồng"></label>
+      <div class="two">
+        <label class="field" for="lcNgay"><span>Ngày</span><input id="lcNgay" type="date" required></label>
+        <label class="field" for="lcGio"><span>Giờ</span><input id="lcGio" type="time"></label>
+      </div>
+      <div class="ev-only">
+        <label class="field" for="lcNoi"><span>Địa điểm</span><input id="lcNoi" type="text" placeholder="Ví dụ: Hội trường UBND phường"></label>
+        <label class="field" for="lcAi"><span>Thành phần, ai đi</span><input id="lcAi" type="text" placeholder="Ví dụ: lãnh đạo phòng, Tổ CNS 50 khu phố"></label>
+      </div>
+      <label class="field" for="lcChuanBi"><span>Cần chuẩn bị (mỗi dòng một việc)</span><textarea id="lcChuanBi" rows="3" placeholder="Mượn hội trường&#10;Gửi giấy mời&#10;In danh sách điểm danh"></textarea></label>
+      <label class="field" for="lcCanCu"><span>Căn cứ văn bản (nếu có)</span><input id="lcCanCu" type="text" list="dsDen" placeholder="Số văn bản"></label>
+      <label class="check viec-only"><input type="checkbox" id="lcGap"> Việc gấp</label>
+      <div class="row end">
+        <button class="btn" type="button" data-close>Hủy</button>
+        <button class="btn btn-primary" type="submit">Thêm</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Sao lưu -->
+  <div class="overlay" id="dlgBackup" hidden>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="bkTitle">
+      <h2 id="bkTitle">Sao lưu dữ liệu đã thêm</h2>
+      <p>Báo cáo, lịch, phân loại văn bản bạn thêm trên web đang lưu trong trình duyệt này. Tải tệp sao lưu để chép sang máy khác hoặc giữ lại.</p>
+      <div class="row">
+        <button class="btn btn-primary" type="button" id="bkDown">Tải tệp sao lưu (.json)</button>
+        <label class="btn" for="bkFile">Khôi phục từ tệp</label>
+        <input type="file" id="bkFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="status" id="bkStatus" role="status"></p>
+      <div class="row end"><button class="btn" type="button" data-close>Đóng</button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="scanDialog" hidden>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+      <h2 id="scanTitle">Nhập dữ liệu qlvb</h2>
+      <p>Dùng nút <b>Quét qlvb</b> trên thanh dấu trang của Chrome (cài một lần tại trang <a href="cai-dat-nut-quet.html" target="_blank" rel="noopener">Cài nút Quét qlvb</a>):</p>
+      <ol class="routine plain">
+        <li>Trên qlvb (đã đăng nhập), bấm nút <b>Quét qlvb</b> trên thanh dấu trang.</li>
+        <li>Nút tự đọc <b>Văn bản đến chờ xử lý</b> và <b>Văn bản đi đã phát hành</b>, rồi mở Bàn làm việc và <b>tự cập nhật</b>. Không cần làm gì thêm.</li>
+        <li>Nếu nút tải về tệp <span class="mono">qlvb_….json</span> (web mở bằng tệp trên máy), chọn tệp đó ở nút dưới đây.</li>
+      </ol>
+      <div class="row">
+        <label class="btn btn-primary" for="qlvbFile">Chọn tệp quét qlvb</label>
+        <input type="file" id="qlvbFile" accept=".json,application/json" multiple hidden>
+      </div>
+      <p class="status" id="qlvbStatus" role="status"></p>
+      <p class="hint">Web tự ghép tờ trình với văn bản chính và đánh dấu văn bản đến đã có văn bản đi nhắc tới. Phân loại, lịch, báo cáo bạn đã thêm vẫn giữ nguyên.</p>
+      <div class="row end"><button class="btn" type="button" data-close>Đóng</button></div>
+    </div>
+  </div>
+
+  <datalist id="dsDen"></datalist>
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+<!-- Khung Trợ lý: chạy trên máy, không gửi dữ liệu ra ngoài -->
+<button class="tl-fab" id="tlFab" type="button" aria-expanded="false" aria-controls="tlPanel">Trợ lý</button>
+<section class="tl-panel" id="tlPanel" aria-label="Trợ lý" hidden>
+  <header class="tl-head">
+    <div><b>Trợ lý</b><span class="hint"> · đọc dữ liệu trong web, soạn câu lệnh dán vào AI</span></div>
+    <button class="btn btn-sm btn-ghost" id="tlClose" type="button" aria-label="Đóng trợ lý">✕</button>
+  </header>
+  <div class="tl-log" id="tlLog" aria-live="polite"></div>
+  <form class="tl-form" id="tlForm" autocomplete="off">
+    <input id="tlInput" type="text" placeholder="Hỏi việc, báo cáo, hoặc gõ số văn bản…" aria-label="Câu hỏi cho trợ lý">
+    <button class="btn btn-primary" type="submit">Gửi</button>
+  </form>
+</section>
+
+<!-- Thứ tự nạp: cấu hình → dữ liệu mẫu → dữ liệu thật (nếu có) → mã -->
+<script src="config/bao-cao.js"></script>
+<script src="config/huong-xu-ly.js"></script>
+<script src="config/cau-lenh-ai.js"></script>
+<script src="data/sample.js"></script>
+<script src="data/local.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/lich-bao-cao.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+<script src="js/tro-ly.js"></script>
+<script src="js/vendor/jszip.min.js"></script>
+<script src="config/nguoi-ky.js"></script>
+<script src="config/nguoi-ky.local.js"></script>
+<script src="templates/mau-word.js"></script>
+<script src="js/thu-muc.js"></script>
+<script src="js/note-mail.js"></script>
+</body>
+</html>

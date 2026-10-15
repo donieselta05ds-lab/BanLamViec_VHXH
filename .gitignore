@@ -1,0 +1,32 @@
+# Dữ liệu thật – không đưa lên GitHub
+data/local.js
+data/*.local.*
+*.xlsx
+*.xls
+*.csv
+!templates/**/*.xlsx
+
+# Tệp Word đã điền số liệu (chỉ giữ mẫu trống trong templates/)
+*.docx
+!templates/**/*.docx
+~$*
+
+# Python, hệ điều hành
+__pycache__/
+*.pyc
+.venv/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Tên thật người ký (mẫu công khai: config/nguoi-ky.js)
+config/*.local.js
+
+# Tệp quét từ qlvb, sao lưu
+qlvb_*.json
+banlamviec-saoluu-*.json
+
+# Theo dõi qlvb tự động: cấu hình cá nhân, hồ sơ Chrome đã đăng nhập, dữ liệu văn bản
+tools/theo_doi_qlvb/cau_hinh.ini
+tools/theo_doi_qlvb/du_lieu/
+__pycache__/
