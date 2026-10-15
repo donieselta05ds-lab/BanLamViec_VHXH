@@ -93,6 +93,7 @@
     veNote();
   }
   window.addEventListener("blv-capnhat", veNote);
+  window.addEventListener("blv-tomtat", veNote);
   document.addEventListener("change", () => setTimeout(veNote, 50));   // đánh dấu xong việc
   setInterval(veNote, 60000);
 
@@ -140,7 +141,9 @@
     const td = 'style="border:1px solid #ccc;padding:6px;vertical-align:top"';
     const tdn = 'style="border:1px solid #ccc;padding:6px;vertical-align:top;white-space:nowrap"';
     const bang = (dau, dong) => `<table cellspacing="0" style="border-collapse:collapse;font-size:14px;width:100%"><tr style="background:#eef2f6">${dau.map((x) => `<th ${td}>${x}</th>`).join("")}</tr>${dong.join("")}</table>`;
-    const tyNoi = (v) => `${esc(String(v.ty).replace(/\s*\((hạn|hạn xử lý)[^)]*\)/gi, ""))}${v.noi ? `<br><span style="color:#666">${esc(tenDu(v.noi))}</span>` : ""}`;
+    const tomTatAi = (so) => (window.BLV_AI && window.BLV_AI.layTomTat(so)) || "";
+    const tyNoi = (v) => `${esc(String(v.ty).replace(/\s*\((hạn|hạn xử lý)[^)]*\)/gi, ""))}${v.noi ? `<br><span style="color:#666">${esc(tenDu(v.noi))}</span>` : ""}`
+      + (tomTatAi(v.so) ? `<div style="margin-top:6px;padding:6px 8px;background:#f3f7fb;border-left:3px solid #1f4e79;white-space:pre-line;font-size:13px"><b>Việc phường cần làm (AI):</b>\n${esc(tomTatAi(v.so))}</div>` : "");
     const soKhan = (v) => `<b>${esc(v.so)}</b>${v.khan && v.khan !== "Thường" ? `<br><span style="color:#b3261e">${esc(v.khan)}</span>` : ""}`;
 
     let muc = 0;
@@ -156,7 +159,7 @@
     }
     if (diGan.length) {
       h += `<h3>${++muc}. Văn bản đã phát hành hôm nay (${diGan.length})</h3>` + bang(["Số", "Ngày văn bản", "Trích yếu"],
-        diGan.map((v) => `<tr><td ${td}><b>${esc(v.so)}</b></td><td ${tdn}>${dmy(v.ngay)}</td><td ${td}>${esc(v.ty)}</td></tr>`));
+        diGan.map((v) => `<tr><td ${td}><b>${esc(v.so)}</b></td><td ${tdn}>${dmy(v.ngay)}</td><td ${td}>${esc(v.ty)}${tomTatAi(v.so) ? `<br><span style="color:#1f4e79;font-size:13px">${esc(tomTatAi(v.so))}</span>` : ""}</td></tr>`));
     }
     if (bc.length) {
       h += `<h3>${++muc}. Báo cáo định kỳ trong 7 ngày tới (${bc.length})</h3>` + bang(["Báo cáo", "Gửi", "Ngày gửi"],

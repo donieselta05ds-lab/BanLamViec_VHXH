@@ -55,11 +55,11 @@ Chrome mở ra để bạn xem script đăng nhập, mở Văn bản đến, Vă
 Nếu báo lỗi "Không tìm thấy menu…", chụp màn hình gửi lại để sửa tên menu trong `theo_doi_qlvb.py` (biến `MENU`).
 
 ### Bước 4. `4_bat_tu_dong.bat`
-Tạo lịch trong Windows Task Scheduler: Thứ Hai đến Thứ Sáu, chạy ẩn lúc 7:30, 13:30, 17:00.
+Tạo lịch trong Windows Task Scheduler: Thứ Hai đến Thứ Sáu, chạy ẩn lúc 7:30, 13:30, 17:00. Máy đang ngủ (sleep) thì tự đánh thức để quét; lỡ giờ vì tắt máy thì mở máy lên là chạy bù. Để máy tự thức, bật **Allow wake timers** trong Power Options (Control Panel → Power Options → Change plan settings → Change advanced power settings → Sleep).
 Tắt: `5_tat_tu_dong.bat`.
 
 ## Lưu ý
-- **Máy phải bật và có mạng** thì script mới chạy; giờ nào máy tắt thì bỏ qua giờ đó (văn bản chưa báo sẽ vào mail lần sau).
+- **Máy phải bật (hoặc đang ngủ) và có mạng** thì script mới chạy. Máy tắt hẳn thì lần mở máy kế tiếp sẽ chạy bù.
 - **Đổi mật khẩu qlvb hoặc Gmail**: chạy lại `2_luu_mat_khau.bat`.
 - Lỗi gì cũng gửi **mail báo lỗi** (tối đa 1 mail mỗi ngày). Chi tiết ở `du_lieu/nhat_ky.log`.
 - Muốn theo dõi lại từ đầu: `py theo_doi_qlvb.py --lam-lai-moc` (xóa danh sách văn bản đã báo).

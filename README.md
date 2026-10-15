@@ -167,6 +167,14 @@ python tools/nhap_qlvb.py --den van_ban_den.xlsx --di van_ban_di.xlsx
 - Không đưa văn bản mật, thông tin cá nhân hay tệp Word đã điền số liệu vào thư mục `templates/` hoặc `data/sample.js`.
 - Việc tự thêm và ô đánh dấu đã xong lưu trên trình duyệt đang dùng.
 
+## Tóm tắt văn bản bằng AI (Claude hoặc Gemini)
+
+- Nút **Quét qlvb** đọc chữ trong tệp PDF (bằng trình xem PDF có sẵn của qlvb): văn bản **đến chờ xử lý** đọc kỹ (tối đa 8 trang), văn bản **đi đã phát hành** đọc sơ (2 trang đầu), văn bản **xem để biết** không đọc. Chỉ văn bản hôm nay; văn bản mật bị bỏ qua.
+- Trên Bàn làm việc, khối **Tóm tắt văn bản hôm nay (AI)** → **Cài AI**: chọn Claude (mặc định, mô hình `claude-haiku-5-5`, mã tạo tại platform.claude.com/settings/keys, tính phí theo lượt, tách riêng gói Claude trên claude.ai) hoặc Gemini (có gói miễn phí, mã tạo tại aistudio.google.com/apikey). Mã chỉ lưu trên trình duyệt máy đó, không lên GitHub.
+- Bật **Tự động tóm tắt ngay khi quét qlvb xong**: quét xong là tự tóm tắt. Văn bản đến: 4 dòng (Nội dung chính, Phường cần làm, Hạn, Gửi về); văn bản đi: 1 dòng. Tóm tắt được đưa vào mail "Gửi tóm tắt".
+- Tệp PDF dạng ảnh scan không có chữ nên chưa tóm tắt được: mở qlvb để đọc.
+- Nội dung văn bản được gửi đến nhà cung cấp AI đã chọn; nên xin ý kiến lãnh đạo trước khi dùng.
+
 ## Đưa lên GitHub
 
 Mở Terminal trong VS Code (Ctrl + `) rồi chạy:

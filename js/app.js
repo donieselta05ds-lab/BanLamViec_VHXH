@@ -477,10 +477,10 @@
     const chinh = rows.filter((r) => !(/\/TTr/.test(r.so) || r.loai === "Tờ trình"));
     return rows.map((r) => {
       const ttr = /\/TTr/.test(r.so) || r.loai === "Tờ trình";
-      if (!ttr) return { so: r.so, ngay: r.ngay, loai: r.loai || "", ty: r.ty, tt: "Hoàn thành", mau: "green", tm: r.tm || "" };
+      if (!ttr) return { so: r.so, ngay: r.ngay, loai: r.loai || "", ty: r.ty, tt: "Hoàn thành", mau: "green", tm: r.tm || "", nd: r.nd || "" };
       const k = chuan(r.ty).slice(0, 40);
       const m = k && chinh.find((x) => { const y = chuan(x.ty); return y.startsWith(k) || k.startsWith(y.slice(0, 40)); });
-      return { so: r.so, ngay: r.ngay, loai: "Tờ trình", ty: r.ty, tt: m ? "Đã có văn bản chính " + m.so : "Đã trình, chờ văn bản chính", mau: m ? "grey" : "amber", tm: "" };
+      return { so: r.so, ngay: r.ngay, loai: "Tờ trình", ty: r.ty, tt: m ? "Đã có văn bản chính " + m.so : "Đã trình, chờ văn bản chính", mau: m ? "grey" : "amber", tm: "", nd: r.nd || "" };
     });
   }
   function doiChieuDen(rows, di) {
@@ -490,7 +490,7 @@
       const goc = r.so.split("/")[0];
       const nhac = goc.length >= 3 && diText.includes(goc + "/");
       const khan = r.khan && r.khan !== "Thường";
-      return { so: r.so, den: r.den, han: r.han || "", khan: r.khan || "Thường", noi: r.noi || "", ty: r.ty,
+      return { so: r.so, den: r.den, han: r.han || "", khan: r.khan || "Thường", noi: r.noi || "", ty: r.ty, nd: r.nd || "", vaiTro: r.vaiTro || "",
         dc: nhac ? "Có văn bản đi nhắc số " + goc : /\/QĐ-/.test(r.so) ? "Quyết định để biết, triển khai" : "Đang xử lý",
         mau: nhac ? "green" : khan ? "red" : /\/QĐ-/.test(r.so) ? "grey" : "amber" };
     });
@@ -498,7 +498,7 @@
   // Gói dữ liệu từ nút quét: bản 1 (mỗi tệp một loại) hoặc bản 2 (một gói có cả đến và đi)
   function traiGoi(goi) {
     if (!goi || goi.nguon !== "qlvb") throw new Error("không phải dữ liệu quét qlvb");
-    if (goi.ban === 2) {
+    if (goi.ban >= 2) {
       return ["den", "di", "xemBiet"].filter((k) => goi[k]).map((k) => ({ nguon: "qlvb", kieu: k, quet: goi.quet, rows: goi[k].rows,
         tongTrenQlvb: goi[k].tong ? goi[k].tong - (goi[k].boQuaMat || 0) : null }));
     }
@@ -512,11 +512,11 @@
     const denRows = uniq(denPacks.flatMap((x) => x.rows));
     const diRows = uniq(packs.filter((x) => x.kieu === "di").flatMap((x) => x.rows));
     const xbPacks = packs.filter((x) => x.kieu === "xemBiet");
-    const xbRows = uniq(xbPacks.flatMap((x) => x.rows)).map((r) => layHan({ so: r.so, den: r.den, han: r.han || "", khan: r.khan || "Thường", noi: r.noi || "", ty: r.ty })).map((r) => Object.assign(r, { ty: boHan(r.ty) }));
+    const xbRows = uniq(xbPacks.flatMap((x) => x.rows)).map((r) => layHan({ so: r.so, den: r.den, han: r.han || "", khan: r.khan || "Thường", noi: r.noi || "", ty: r.ty, nd: r.nd || "" })).map((r) => Object.assign(r, { ty: boHan(r.ty) }));
     const xemBiet = xbPacks.length ? xbRows : D.xemBiet;
 
     // Văn bản đi: CỘNG DỒN qua các lần quét, giữ làm kho để lập báo cáo theo kỳ
-    const goc = (r) => ({ so: r.so, ngay: r.ngay, loai: r.loai, ty: r.ty, tm: r.tm || "" });
+    const goc = (r) => ({ so: r.so, ngay: r.ngay, loai: r.loai, ty: r.ty, tm: r.tm || "", nd: (r.ngay || "") >= addDays(TODAY, -7) ? String(r.nd || "").slice(0, 4000) : "" });
     const diCu = D.di.map(goc);
     const diGop = uniq(diCu.concat(diRows.map(goc)));
     const diMoi = diGop.length - diCu.length;
@@ -526,7 +526,7 @@
     // quét thiếu trang thì cộng thêm vào danh sách cũ
     const tong = Math.max(0, ...denPacks.map((x) => x.tongTrenQlvb || 0));
     const du = denRows.length >= tong;
-    const denGoc = (r) => ({ so: r.so, den: r.den, han: r.han, khan: r.khan, noi: r.noi, ty: r.ty });
+    const denGoc = (r) => ({ so: r.so, den: r.den, han: r.han, khan: r.khan, noi: r.noi, ty: r.ty, nd: r.nd || "", vaiTro: r.vaiTro || "" });
     const denBase = !denRows.length ? D.den.map(denGoc) : du ? denRows : uniq(D.den.map(denGoc).concat(denRows));
     const den = doiChieuDen(denBase, di);
 
@@ -553,7 +553,14 @@
   // Nhận dữ liệu từ nút "Quét qlvb" qua phần # của địa chỉ (không gửi lên máy chủ)
   function nhanTuDiaChi() {
     const h = location.hash;
-    if (h === "#dang-quet") { toast("Đang nhận dữ liệu từ qlvb… giữ nguyên tab qlvb đến khi xong"); return; }
+    if (h === "#dang-quet") {
+      toast("Đang nhận dữ liệu từ qlvb… giữ nguyên tab qlvb đến khi xong");
+      history.replaceState(null, "", location.pathname + location.search);
+      // báo cho tab qlvb biết Bàn làm việc đã sẵn sàng nhận dữ liệu
+      let n = 0; const h2 = setInterval(() => { try { if (window.opener) window.opener.postMessage("blv-san-sang", "https://qlvb.tphcm.gov.vn"); } catch (e) { /* bỏ qua */ } if (++n > 60) clearInterval(h2); }, 1000);
+      window.__blvDungBao = () => clearInterval(h2);
+      return;
+    }
     if (!h.startsWith("#qlvb=")) return;
     history.replaceState(null, "", location.pathname + location.search);
     try {
@@ -574,6 +581,12 @@
     toast(kq);
     window.dispatchEvent(new Event("blv-capnhat"));
   }
+  // Nhận dữ liệu nút quét gửi sang bằng postMessage (chỉ chấp nhận từ trang qlvb)
+  window.addEventListener("message", (e) => {
+    if (e.origin !== "https://qlvb.tphcm.gov.vn" || !e.data || e.data.loai !== "blv-qlvb") return;
+    if (window.__blvDungBao) window.__blvDungBao();
+    try { capNhatTaiCho(nhapGoi(traiGoi(e.data.goi))); } catch (err) { toast("Không nhận được dữ liệu từ qlvb: " + err.message); }
+  });
   window.addEventListener("hashchange", nhanTuDiaChi);
   nhanTuDiaChi();
   $("#dsDen").innerHTML = D.den.map((d) => `<option value="${esc(d.so)}">${esc(d.ty.slice(0, 60))}</option>`).join("");

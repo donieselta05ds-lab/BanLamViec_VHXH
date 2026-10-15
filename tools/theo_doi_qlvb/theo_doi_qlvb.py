@@ -180,35 +180,29 @@ def bao_cao_sap_han(so_ngay=3):
 # ---------------------------------------------------------------------------
 JS_DOC_BANG = r"""
 (kieu) => {
-  const KHAN = ["Thường", "Khẩn", "Hỏa tốc", "Hoả tốc", "Thượng khẩn"];
-  const LOAI = ["Công văn","Kế hoạch","Quyết định","Tờ trình","Báo cáo","Thông báo","Giấy mời","Thư mời","Nghị quyết","Chỉ thị","Hướng dẫn","Khác"];
   const MAT = ["Mật", "Tối mật", "Tuyệt mật"];
-  const reSo = /^\d[\d.]*\/[A-Za-zĐđ0-9&.\-\/_]+$/;
   const reDate = /(\d{2})\/(\d{2})\/(\d{4})/;
   const iso = (s) => { const m = reDate.exec(s || ""); return m ? m[3] + "-" + m[2] + "-" + m[1] : ""; };
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
-  const tables = [...document.querySelectorAll("table")].filter((t) => t.offsetParent && t.rows.length > 1 && /Trích yếu/i.test(t.rows[0].innerText || ""));
-  if (!tables.length) return { loi: "khong-thay-bang" };
-  const table = tables.sort((a, b) => b.rows.length - a.rows.length)[0];
+  const hien = (x) => x.offsetParent !== null;
+  let t = document.getElementById("dt_basic");
+  if (!t || t.rows.length < 2) t = [...document.querySelectorAll("table")].filter((x) => x.rows.length > 1 && /Trích yếu/i.test(x.rows[0].innerText || "")).sort((a, b) => b.rows.length - a.rows.length)[0];
+  if (!t) return /Không tìm thấy dữ liệu/i.test(document.body.innerText) ? { rows: [], boQuaMat: 0, tong: 0 } : { loi: "khong-thay-bang" };
+  const th = [...t.rows[0].cells], dau = th.map((c) => clean(c.innerText));
   const rows = []; let boQuaMat = 0;
-  [...table.rows].slice(1).forEach((tr) => {
-    const cells = [...tr.cells].map((td) => clean(td.innerText)).filter(Boolean);
-    let so = cells.find((x) => reSo.test(x));
-    if (!so) return;
-    const ty = cells.slice().sort((a, b) => b.length - a.length)[0] || "";
-    if (cells.some((x) => MAT.includes(x)) || /^\(?\s*(tuyệt mật|tối mật|mật)\s*[\)\-:]/i.test(ty)) { boQuaMat++; return; }
-    const dates = cells.filter((x) => reDate.test(x) && x.length <= 20);
-    const khan = cells.find((x) => KHAN.includes(x)) || "Thường";
-    const loai = cells.find((x) => LOAI.includes(x)) || "";
-    so = so.replace(/[_-]UBNDP_GIADINH/, "");
-    if (kieu !== "di") {
-      const noi = cells.find((x) => x !== ty && /^(Sở|Ủy ban|Uỷ ban|Công an|PC0|PA0|Văn phòng|Đảng ủy|Đảng uỷ|Trung tâm|Ban |Bộ |Hội đồng|Thành ủy|Thành uỷ)/.test(x)) || "";
-      const den = dates.find((x) => /\d{2}:\d{2}/.test(x)) || dates[1] || dates[0] || "";
-      const han = dates.length > 2 ? dates[dates.length - 1] : "";
-      rows.push({ so, den: iso(den), han: iso(han), khan: khan === "Hoả tốc" ? "Hỏa tốc" : khan, noi: noi.replace(/ - TPHCM$/, ""), ty, loaiVb: loai });
-    } else {
-      rows.push({ so, ngay: iso(dates[0]), loai: loai || (/\/TTr/.test(so) ? "Tờ trình" : ""), ty });
-    }
+  [...t.rows].slice(1).forEach((tr) => {
+    const td = [...tr.cells]; if (td.length < 3) return;
+    // số ô bằng số cột: ghép theo vị trí; lệch (bảng văn bản đi có ô ẩn thừa): ghép các cột đang hiện theo thứ tự
+    let c = td;
+    if (td.length !== th.length) { const tdH = td.filter(hien); c = th.map((h, i) => hien(h) ? (tdH[th.slice(0, i).filter(hien).length] || null) : null); }
+    const o = (...ns) => { for (const n of ns) for (let i = 0; i < dau.length; i++) if (dau[i] === n) { const x = clean(c[i] && c[i].innerText); if (x) return x; } return ""; };
+    const so = o("Số ký hiệu").replace(/[_-]UBNDP_GIADINH/, ""), ty = o("Trích yếu");
+    if (!so && !ty) return;
+    if (MAT.includes(o("Độ mật")) || /^\(?\s*(tuyệt mật|tối mật|mật)\s*[)\-:]/i.test(ty)) { boQuaMat++; return; }
+    const khan = o("Độ khẩn") || "Thường";
+    if (kieu === "di") rows.push({ so, ngay: iso(o("Ngày ban hành", "Ngày phát hành", "Ngày văn bản")), loai: o("Loại văn bản") || (/\/TTr/.test(so) ? "Tờ trình" : ""), ty });
+    else rows.push({ so, den: iso(o("Ngày đến", "Ngày nhận")), han: iso(o("Hạn xử lý")), khan: khan === "Hoả tốc" ? "Hỏa tốc" : khan,
+      noi: o("Đơn vị ban hành").replace(/\s*-\s*(TPHCM|TUTPHCM)$/, ""), ty, loaiVb: o("Loại văn bản"), vaiTro: o("Vai trò") });
   });
   const tong = (document.body.innerText.match(/Tổng số bản ghi\s*:?\s*(\d+)/) || [])[1];
   return { rows, boQuaMat, tong: tong ? Number(tong) : null, tieuDe: document.title };
@@ -219,17 +213,18 @@ JS_DOC_BANG = r"""
 def dang_nhap_neu_can(page, cfg):
     page.goto(URL_QLVB, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(2500)
-    if not page.locator("input[type=password]").count():
+    # trang qlvb luôn có 1 ô mật khẩu ẩn (hộp đổi mật khẩu): chỉ xét ô đang hiện
+    if not page.locator("input[type=password]:visible").count():
         return
     ghi("Phiên đã hết, đăng nhập lại")
     ten = cfg["qlvb"]["ten_truy_cap"].strip()
-    o_mk = page.locator("input[type=password]").first
-    o_ten = page.locator("input[type=text], input:not([type])").first
+    o_mk = page.locator("input[type=password]:visible").first
+    o_ten = page.locator("input[type=text]:visible, input:not([type]):visible").first
     o_ten.fill(ten)
     o_mk.fill(mat_khau(KEYRING_QLVB, ten))
     page.get_by_role("button", name=re.compile("đăng nhập", re.I)).first.click()
     page.wait_for_timeout(5000)
-    if page.locator("input[type=password]").count():
+    if page.locator("input[type=password]:visible").count():
         raise RuntimeError("Đăng nhập qlvb không được (sai mật khẩu, đổi mật khẩu, hoặc hệ thống yêu cầu xác thực thêm).")
 
 
@@ -256,7 +251,8 @@ def mo_danh_sach(page, kieu, trang_thai):
         if kieu == "xemBiet":
             return False
         raise RuntimeError(f"Không tìm thấy menu {muc[0]} trên qlvb (giao diện có thể đã đổi).")
-    page.wait_for_timeout(2500)
+    page.wait_for_load_state("domcontentloaded")
+    page.wait_for_timeout(3000)
     # hiện 50 bản ghi mỗi trang nếu có ô chọn
     try:
         if page.locator("#selectPageRec").count():

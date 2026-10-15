@@ -35,14 +35,14 @@
     <ol>
       <li>Đăng nhập qlvb như thường lệ, đang ở trang nào cũng được.</li>
       <li>Bấm nút <b>Quét qlvb</b> trên thanh dấu trang. Lần đầu, nếu Chrome hỏi, chọn <b>luôn cho phép cửa sổ bật lên</b> từ qlvb.</li>
-      <li>Nút tự mở <b>Văn bản đến chờ xử lý</b> rồi <b>Văn bản đi đã phát hành</b>, đọc hai danh sách. Đừng bấm gì trên qlvb trong lúc đó.</li>
-      <li>Bàn làm việc mở ra và tự cập nhật văn bản mới.</li>
+      <li>Nút đọc ngầm (trang qlvb đang xem không bị chuyển đi) <b>Văn bản đến chờ xử lý</b>, <b>Văn bản xem để biết</b>, <b>Văn bản đi đã phát hành</b>; chỉ lấy văn bản <b>của ngày hôm nay</b>, và đọc chữ trong tệp PDF để tóm tắt (văn bản đến đọc kỹ, văn bản đi đọc sơ, văn bản xem để biết không đọc). Đừng đóng trang qlvb trong lúc đó.</li>
+      <li>Bàn làm việc mở ra và tự cập nhật; AI (Claude hoặc Gemini) tóm tắt văn bản, tự động nếu đã bật.</li>
     </ol>
   </div>
 
   <div class="block">
     <h2>Nút này làm gì</h2>
-    <p>Nút chỉ <b>đọc</b> hai danh sách trên màn hình của bạn: không bấm xử lý, không sửa gì trên qlvb, không lưu mật khẩu. <b>Văn bản mật được bỏ qua.</b> Dữ liệu chuyển sang Bàn làm việc qua phần sau dấu <code>#</code> của địa chỉ, phần này chỉ nằm trong trình duyệt, không gửi lên máy chủ nào; Bàn làm việc lưu dữ liệu trên trình duyệt của máy bạn. Mã nguồn: <code>js/nut-quet.js</code>.</p>
+    <p>Nút chỉ <b>đọc</b> danh sách và tệp PDF bằng chính phiên đăng nhập của bạn: không bấm xử lý, không chuyển, không kết thúc, không sửa gì trên qlvb, không lưu mật khẩu. <b>Văn bản mật được bỏ qua.</b> Dữ liệu chuyển thẳng từ tab qlvb sang tab Bàn làm việc trên máy bạn (postMessage), không qua máy chủ nào; Bàn làm việc lưu dữ liệu trên trình duyệt của máy bạn. Nội dung văn bản chỉ được gửi đến AI khi bạn bấm <b>Tóm tắt</b>. Mã nguồn: <code>js/nut-quet.js</code>.</p>
     <p class="hint">Nên báo bộ phận CNTT hoặc lãnh đạo phòng trước khi dùng trên máy cơ quan.</p>
   </div>
 </div>
