@@ -8,7 +8,7 @@ Chạy trên máy tính của bạn (không cần Claude, không cần AI). Th�
 Mỗi lần quét:
   1. Mở qlvb bằng Chrome (chạy ẩn), tự đăng nhập nếu phiên đã hết.
   2. Đọc "Văn bản đến chờ xử lý", "Văn bản xem để biết", "Văn bản đi đã phát hành".
-  3. Chỉ lấy văn bản từ ngày bắt đầu theo dõi trở đi; văn bản cũ không đưa vào mail.
+  3. Chỉ lấy văn bản của ngày hôm nay; văn bản cũ không lấy, không đưa vào mail.
   4. BỎ QUA văn bản mật: không lưu, không gửi.
   5. Ghi tệp qlvb_*_moi_nhat.json để nhập vào Bàn làm việc.
 
@@ -46,9 +46,9 @@ URL_QLVB = "https://qlvb.tphcm.gov.vn/qlvbdh/main?lang=vi"
 
 # Menu trên qlvb: (nhóm, mục, chữ phải có trong tiêu đề trang)
 MENU = {
-    "den": (["Văn bản đến"], ["Văn bản chờ xử lý", "Văn bản đến chờ xử lý", "Chờ xử lý"], "đến"),
-    "xemBiet": (["Văn bản đến"], ["Văn bản xem để biết", "Văn bản đến xem để biết", "Xem để biết"], "biết"),
-    "di": (["Văn bản đi"], ["Văn bản đã phát hành", "Văn bản đi đã phát hành", "Đã phát hành"], "đi"),
+    "den": (["Văn bản đến"], ["Văn bản đến cần xử lý", "Văn bản đến chờ xử lý", "Văn bản chờ xử lý", "Văn bản cần xử lý", "Chờ xử lý"], "đến"),
+    "xemBiet": (["Văn bản đến"], ["Văn bản đến xem để biết", "Văn bản xem để biết", "Văn bản để biết", "Xem để biết"], "biết"),
+    "di": (["Văn bản đi"], ["Văn bản đi đã phát hành", "Văn bản đã phát hành", "Đã phát hành"], "đi"),
 }
 # Hạn ghi trong trích yếu, ví dụ "(hạn xử lý 15/07/2026)"
 RE_HAN_TY = re.compile(r"\s*\((?:hạn|hạn xử lý)[^)]*?(\d{1,2})/(\d{1,2})/(\d{4})[^)]*\)", re.I)
@@ -235,7 +235,8 @@ def dang_nhap_neu_can(page, cfg):
 
 def bam_chu(page, cac_chu):
     for chu in cac_chu:
-        loc = page.get_by_text(chu, exact=True)
+        # chấp nhận số đếm ở cuối menu, ví dụ "Văn bản đến (36)"
+        loc = page.get_by_text(re.compile(r"^\s*" + re.escape(chu) + r"(\s*\(\d+\))?\s*$", re.I))
         for i in range(loc.count()):
             el = loc.nth(i)
             if el.is_visible():
@@ -247,8 +248,10 @@ def bam_chu(page, cac_chu):
 
 def mo_danh_sach(page, kieu, trang_thai):
     nhom, muc, chu_tieu_de = MENU[kieu]
-    bam_chu(page, nhom)
-    da_bam = bam_chu(page, muc)
+    da_bam = bam_chu(page, muc)          # mục con đang hiện thì bấm luôn
+    if not da_bam:
+        bam_chu(page, nhom)              # chưa hiện thì mở nhóm menu trước
+        da_bam = bam_chu(page, muc)
     if not da_bam:
         if kieu == "xemBiet":
             return False
@@ -516,7 +519,11 @@ def chay(cfg, hien=False, loai=None):
     loai = loai or loai_lan_chay()
 
     kq = quet(cfg, hien)
+    # Chỉ lấy văn bản của NGÀY HÔM NAY; văn bản cũ không lấy
+    truong_ngay = {"den": "den", "xemBiet": "den", "di": "ngay"}
     for kieu in ("den", "xemBiet", "di"):
+        kq[kieu]["rows"] = [r for r in kq[kieu]["rows"] if (r.get(truong_ngay[kieu]) or hn) == hn]
+        kq[kieu]["tong"] = None
         luu_json(kieu, kq[kieu])
 
     def moi(kieu, truong):
@@ -589,7 +596,7 @@ def mau_mail():
     so = [(4, 2, 3), (2, 1, 5), (3, 0, 2), (3, 1, 2), (1, 1, 2)]
     tuan = {(thu_hai + dt.timedelta(days=i)).isoformat(): {"den": a, "xb": b, "di": c} for i, (a, b, c) in enumerate(so)}
     thu_sau = thu_hai + dt.timedelta(days=4)
-    tieu_de, h, _ = soan_mail("tuan", [], [], di[:1], (), tuan[thu_sau.isoformat()], tuan, gio="17:00", mau=True, ngay=thu_sau)
+    tieu_de, h, _ = soan_mail("tuan", [], [], [], (), tuan[thu_sau.isoformat()], tuan, gio="17:00", mau=True, ngay=thu_sau)
     (DU_LIEU / "mail_mau_tuan.html").write_text(h, encoding="utf-8")
     ra.append((tieu_de, h))
     for t, _ in ra:

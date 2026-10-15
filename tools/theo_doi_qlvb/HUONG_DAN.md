@@ -9,7 +9,7 @@ Script chạy trên máy tính của bạn, **không cần Claude hay AI**. Th�
 | 17:00 | **[Cuối ngày]** | Văn bản mới từ lần báo trước + số văn bản đã báo trong ngày |
 | Thứ Sáu 17:00 | **[Cuối tuần]** | Như cuối ngày + bảng tổng hợp số văn bản từng ngày trong tuần |
 
-**Văn bản đã báo thì không báo lại.** Văn bản trước ngày bắt đầu theo dõi (`bat_dau`) không đưa vào mail.
+**Văn bản đã báo thì không báo lại.** Chỉ lấy văn bản của ngày hôm nay; văn bản cũ không lấy.
 
 Mỗi mail gồm các mục (mục nào không có thì bỏ):
 1. **Văn bản cần xử lý**: Số, Trích yếu, Đề xuất cần làm gì (tham mưu công văn, báo cáo, kế hoạch…), Hạn (ghi ngày khi qlvb có hạn, kể cả hạn ghi trong trích yếu).
